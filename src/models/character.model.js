@@ -4,6 +4,8 @@ import { sequelize } from "../config/database.js";
 export const Character = sequelize.define(
     "Character", {
         id: {
+            primaryKey: true,
+            autoIncrement: true,
             type: DataTypes.INTEGER,
             allowNull: false
         },
