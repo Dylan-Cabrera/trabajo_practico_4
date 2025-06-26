@@ -1,7 +1,14 @@
 import { Router } from "express";
-import { getCharacters } from "../controller/character.controller.js";
 const router = Router();
 
+//importamos la lógica de los controladores
+import { getCharacters } from "../controller/character.controller.js";
+import { getCharactersById } from "../controller/character.controller.js";
+import { createCharacter } from "../controller/character.controller.js";
+
+//rutas
 router.get("/characters", getCharacters );
+router.get("/characters/:id", getCharactersById)
+router.post("/characters", createCharacter)
 
 export default router;
