@@ -17,10 +17,8 @@ export const getCharactersById = async (req,res) => {
     
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-            return res.status(404).json({ 
+            return res.status(400).json({ 
                 message: "El id debe ser un número",
-                error: "Not Found",
-                statusCode: "404"
             });
         } 
     try{
@@ -39,25 +37,36 @@ export const getCharactersById = async (req,res) => {
 
 //crear personaje
 export const createCharacter = async (req,res)=> {
+
+    const id = parseInt(req.params.id);
     
     const { name, ki, race, gender, description } = req.body;
+    
+    const nameRepetido = await Character.findOne( { where: { name: name} } );
+
+    if (nameRepetido) {
+        return res.json({message: "No se pueden repetir los nombres"})
+    }
         
-        if ( name === "" ) {
+        if ( name === "" || name.trim() === "") {
             return res.status(400).json({ message: "el nombre no puede estar vacio" })
         }
         if ( race === "" ) {
             return res.status(400).json({ message: "la raza no puede estar vacia" })
         }
+        if ( ki === null )  {
+            return res.status(400).json({ message: "el ki no puede estar vacio" })
+        }
         if ( gender === "" ) {
             return res.status(400).json({ message: "el gender no puede estar vacio" })
         }
-        if (gender != "male" || gendere != "female") {
+        if (gender != "male" && gender && "female" && gender != "Male" && gender != "Female") {
             return res.status(400).json( { message: "gender invalido"} )
-        }
-
+        } 
+        const kiInt = parseInt(ki);
 
     try{
-        const createChar = await Character.create({ name, ki, race, gender, description });
+        const createChar = await Character.create({ name, kiInt, race, gender, description });
         res.status(201).json(createChar);
 
     } catch(e){
@@ -68,24 +77,42 @@ export const createCharacter = async (req,res)=> {
 //actualizar personaje
 export const updateChar = async (req,res) => {
 
-    const { name, ki, race, gender, description } = req.body;
-        
-        if ( name === "" || name.trim() === "") {
-            return res.status(400).json({ message: "el nombre no puede estar vacio" })
-        }
-        if ( race === "" ) {
-            return res.status(400).json({ message: "la raza no puede estar vacia" })
-        }
-        if ( gender === "" ) {
-            return res.status(400).json({ message: "el gender no puede estar vacio" })
-        }
-        if (gender != "male" && gender && "female" && gender != "Male" && gender != "Female") {
-            return res.status(400).json( { message: "gender invalido"} )
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+            return res.status(400).json({ 
+                message: "El id debe ser un número",
+            });
         } 
-        
+    const { name, ki, race, gender, description } = req.body;
+    const nameRepetido = await Character.findOne( { where: { name: name} } );
+    
+    if (nameRepetido) {
+        return res.json({message: "No se pueden repetir los nombres"})
+    }
+    
+    if ( name === "" || name.trim() === "") {
+        return res.status(400).json({ message: "el nombre no puede estar vacio" })
+    }
+    if ( race === "" || race.trim() === "")  {
+        return res.status(400).json({ message: "la raza no puede estar vacia" })
+    }
+    if ( gender === "" || gender.trim() === "")  {
+        return res.status(400).json({ message: "el gender no puede estar vacio" })
+    }
+    if ( ki === null )  {
+        return res.status(400).json({ message: "el ki no puede estar vacio" })
+    }
+    
+    
+    if (gender != "male" && gender && "female" && gender != "Male" && gender != "Female") {
+        return res.status(400).json( { message: "gender invalido"} )
+    } 
+    
+    const kiInt = parseInt(ki);
+
 
     try{
-        const update = await Character.update(req.body, {
+        const update = await Character.update({ name, kiInt, race, gender, description } , {
         where: { id: req.params.id},
         });
         
@@ -101,11 +128,23 @@ export const updateChar = async (req,res) => {
     }
 }
 
-//borrar personaje
+//eliminar personaje
 
 export const deleteChar = async (req,res) => {
+
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+            return res.status(400).json({ 
+                message: "El id debe ser un número",
+            });
+        } 
     try{
-        const deleteChar = await Character.destroy(  )
+        const deleteChar = await Character.destroy({ where: {id: req.params.id} });
+        if (deleteChar) {
+            return res.json( {message: "Personaje eliminado"}) 
+        } else {
+            return res.status(404).json({ message : "Id Not Found" }) 
+        }
 
     } catch(e) {
         res.status(500).json({ error: e.message });
